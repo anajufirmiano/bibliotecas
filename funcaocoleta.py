@@ -15,13 +15,22 @@ from typing import Any, Dict, Optional
 import requests
 
 # Importação das regras matemáticas e de validação puras
-from funcaoregra import (
-    calcular_idade,
-    consultar_cep,
-    validar_cartao,
-    validar_cpf,
-    validar_telefone,
-)
+try:
+    from funcaoregra import (
+        calcular_idade,
+        consultar_cep,
+        validar_cartao,
+        validar_cpf,
+        validar_telefone,
+    )
+except (ImportError, ModuleNotFoundError):
+    from .funcaoregra import (
+        calcular_idade,
+        consultar_cep,
+        validar_cartao,
+        validar_cpf,
+        validar_telefone,
+    )
 
 
 # ==============================================================================

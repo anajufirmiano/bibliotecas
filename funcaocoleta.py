@@ -2,11 +2,11 @@
 MÓDULO DE INTERFACE E COLETA DE DADOS (interface.py)
 
 Este módulo gerencia a comunicação direta com o usuário via terminal.
-Ele realiza loops de input, exibe mensagens, trata erros amigavelmente 
+Ele realiza loops de input, exibe menus, trata erros amigavelmente
 e consome as regras puras de validação do módulo 'funcaoregra'.
 
 Como utilizar:
-    >>> from interface import pedir_sexo, pedir_cpf, cadastrar_endereco
+    >>> from interface import pedir_sexo, pedir_cpf, pedir_endereco
     >>> documento = pedir_cpf()
 """
 
@@ -37,13 +37,13 @@ except (ImportError, ModuleNotFoundError):
 # ELEMENTOS VISUAIS E UTILITÁRIOS
 # ==============================================================================
 
-def lin(tamanho: int = 50, caractere: str = '-=') -> None:
+def lin(tamanho: int = 70, caractere: str = '=') -> None:
     """
     Imprime uma linha divisória visual no terminal para organizar saídas e cabeçalhos.
 
     Args:
-        tamanho (int): Quantidade de repetições do caractere (padrão: 50).
-        caractere (str): Sequência de caracteres para formar a linha (padrão: '-=').
+        tamanho (int): Quantidade de repetições do caractere (padrão: 70).
+        caractere (str): Sequência de caracteres para formar a linha (padrão: '=').
 
     Exemplo:
         >>> lin(15, '=')
@@ -52,16 +52,18 @@ def lin(tamanho: int = 50, caractere: str = '-=') -> None:
     print(caractere * tamanho)
 
 
-def exibir_cabecalho(titulo: str) -> None:
+def exibir_cabecalho(titulo: str, largura: int = 70) -> None:
     """
-    Exibe um título centralizado entre linhas divisórias.
+    Exibe um título centralizado entre linhas divisórias que ultrapassam a largura do cabeçalho.
 
     Args:
         titulo (str): Texto a ser exibido no centro.
+        largura (int): Tamanho total da linha divisória (padrão: 70).
     """
-    lin(30, '=')
-    print(f'{titulo.center(60)}')
-    lin(30, '=')
+    largura_total = max(largura, len(titulo) + 10)
+    lin(largura_total, '=')
+    print(f'{titulo.center(largura_total)}')
+    lin(largura_total, '=')
 
 
 # ==============================================================================
@@ -80,7 +82,7 @@ def pedir_sexo() -> str:
         >>> pedir_sexo()
         [1] Feminino
         [2] Masculino
-        Escolha uma opção: 1
+        Opção: 1
         'Feminino'
     """
     opcoes = {
@@ -161,46 +163,49 @@ def exibir_menu_navegacao() -> int:
 # COLETA E VALIDAÇÃO DE DADOS PESSOAIS
 # ==============================================================================
 
-def pedir_data_nascimento() -> int:
+def pedir_data_nascimento() -> Dict[str, Any]:
     """
     Solicita a data de nascimento no terminal, valida a existência e calcula a idade.
+    Executa a captura silenciosamente sem confirmações verbosas.
 
     Consome:
         funcaoregra.calcular_idade()
 
     Returns:
-        int: Idade calculada em anos inteiros.
+        Dict[str, Any]: Dicionário contendo 'data_nascimento' (str) e 'idade' (int).
+
+    Exemplo:
+        >>> pedir_data_nascimento()
+        Data de nascimento (DD/MM/AAAA): 15/05/1998
+        {'data_nascimento': '15/05/1998', 'idade': 28}
     """
     while True:
         entrada = input('\nData de nascimento (DD/MM/AAAA): ').strip()
         try:
             idade = calcular_idade(entrada)
-            print(f'-> Data aceita! Idade calculada: {idade} anos.')
-            return idade
+            return {
+                'data_nascimento': entrada,
+                'idade': idade,
+            }
         except ValueError as erro:
-            print(f'-> Entrada inválida: {erro}. Tente novamente.')
+            print(f'-> Data inválida: {erro}. Tente novamente.')
 
 
-def pedir_cpf() -> Optional[str]:
+def pedir_cpf() -> str:
     """
-    Solicita o CPF no console em loop. Permite encerramento com 'sair'.
+    Solicita o CPF no console em loop e valida os dígitos verificadores (módulo 11).
 
     Consome:
         funcaoregra.validar_cpf()
 
     Returns:
-        Optional[str]: CPF formatado (XXX.XXX.XXX-XX) ou None se cancelado.
+        str: CPF validado e formatado no padrão 'XXX.XXX.XXX-XX'.
     """
     while True:
-        entrada = input("\nDigite o CPF (ou 'sair' para cancelar): ").strip()
-
-        if entrada.lower() == 'sair':
-            print('-> Coleta de CPF cancelada.')
-            return None
+        entrada = input('\nDigite o CPF: ').strip()
 
         cpf_formatado = validar_cpf(entrada)
         if cpf_formatado:
-            print(f'-> CPF válido e registrado: {cpf_formatado}')
             return cpf_formatado
 
         print('-> CPF inválido (dígitos verificadores incorretos). Tente novamente.')
@@ -215,7 +220,7 @@ def pedir_endereco() -> Optional[Dict[str, str]]:
         funcaoregra.consultar_cep()
 
     Returns:
-        Optional[Dict[str, str]]: Dados completos com endereço formatado ou None se falhar.
+        Optional[Dict[str, str]]: Dicionário com dados do endereço ou None se falhar.
     """
     print('\n=== CADASTRO DE ENDEREÇO ===')
     cep_digitado = input('Digite o CEP (com ou sem máscara): ').strip()
@@ -244,7 +249,7 @@ def pedir_endereco() -> Optional[Dict[str, str]]:
     comp_texto = f', {complemento}' if complemento else ''
     endereco_completo = f'{rua}, Nº {numero}{comp_texto} - {bairro}, {cidade}/{uf}'
 
-    print(f'\nEndereço registrado: {endereco_completo}')
+    print(f'Endereço registrado: {endereco_completo}')
 
     return {
         'cep': dados_cep['cep'],
@@ -258,24 +263,28 @@ def pedir_endereco() -> Optional[Dict[str, str]]:
     }
 
 
-def pedir_telefone() -> Optional[Dict[str, str]]:
+def pedir_telefone(mensagem: str = '\nDigite o telefone com DDD (ou DDI, ex: +55 21 98470-9360): ') -> Optional[Dict[str, str]]:
     """
     Solicita o número de telefone no terminal e valida usando libphonenumber.
+    Retorna os dados estruturados silenciosamente, sem impressões de confirmação.
 
     Consome:
         funcaoregra.validar_telefone()
 
+    Args:
+        mensagem (str): Mensagem personalizada para solicitação do input.
+
     Returns:
-        Optional[Dict[str, str]]: Dicionário com número formatado e localidade ou None se inválido.
+        Optional[Dict[str, str]]: Dicionário com 'telefone_internacional',
+                                  'telefone_nacional' e 'origem', ou None se inválido.
     """
-    entrada = input('\nDigite o telefone com DDD (ou DDI, ex: +55 21 98470-9360): ').strip()
+    entrada = input(mensagem).strip()
     resultado = validar_telefone(entrada)
 
     if resultado:
-        print(f"-> Telefone válido ({resultado['origem']}): {resultado['telefone_internacional']}")
         return resultado
 
-    print('-> Número de telefone inválido ou incompleto.')
+    print('-> Telefone inválido ou incompleto. Tente novamente.')
     return None
 
 

@@ -2,7 +2,7 @@
 Pacote de bibliotecas de validação e coleta de dados.
 """
 
-from .funcaoregra import (
+from .funcoes.funcaoregra import (
     calcular_idade,
     validar_cpf,
     consultar_cep,
@@ -11,7 +11,7 @@ from .funcaoregra import (
     algoritmo_luhn,
     identificar_bandeira,
 )
-from .funcaocoleta import (
+from .funcoes.funcaocoleta import (
     lin,
     exibir_cabecalho,
     pedir_sexo,

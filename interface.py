@@ -3,7 +3,7 @@ MÓDULO DE INTERFACE E COLETA DE DADOS (interface.py)
 Alias para funcaocoleta.py para compatibilidade total.
 """
 
-from .funcaocoleta import (
+from .funcoes.funcaocoleta import (
     lin,
     exibir_cabecalho,
     pedir_sexo,

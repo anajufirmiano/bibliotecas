@@ -16,7 +16,7 @@ import requests
 
 # Importação das regras matemáticas e de validação puras
 try:
-    from funcaoregra import (
+    from sistemas.bibliotecas.funcoes.funcaoregra import (
         calcular_idade,
         consultar_cep,
         validar_cartao,
